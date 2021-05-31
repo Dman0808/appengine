@@ -10,7 +10,9 @@ environment:
 
 dependencies:
   fixnum: ^1.0.0
-  gcloud: ^0.7.0
+  #gcloud: ^0.7.0
+  gcloud:
+    git: https://github.com/dart-lang/gcloud
   googleapis_auth: ^1.1.0
   grpc: ^3.0.0
   http: ^0.13.3
