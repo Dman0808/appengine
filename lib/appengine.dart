@@ -46,17 +46,15 @@ const Symbol _APPENGINE_CONTEXT = #appengine.context;
  * and is no longer serving requests.
  */
 Future runAppEngine(void handler(HttpRequest request),
-    {Function onError, int port: 8080, bool shared: false}) {
+    {Function onError, int port = 8080, bool shared = false}) {
   var errorHandler;
-  if (onError != null) {
-    if (onError is ZoneUnaryCallback) {
-      errorHandler = (error, stack) => onError(error);
-    } else if (onError is ZoneBinaryCallback) {
-      errorHandler = onError;
-    } else {
-      throw new ArgumentError(
-          'The [onError] argument must take either one or two arguments.');
-    }
+  if (onError is ZoneUnaryCallback) {
+    errorHandler = (error, stack) => onError(error);
+  } else if (onError is ZoneBinaryCallback) {
+    errorHandler = onError;
+  } else {
+    throw new ArgumentError(
+        'The [onError] argument must take either one or two arguments.');
   }
 
   return appengine_internal.runAppEngine(

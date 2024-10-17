@@ -29,7 +29,7 @@ class AppEngineHttpServer {
   HttpServer _httpServer;
 
   AppEngineHttpServer(this._contextRegistry,
-      {String hostname: '0.0.0.0', int port: 8080, bool shared: false})
+      {String hostname = '0.0.0.0', int port = 8080, bool shared = false})
       : _hostname = hostname,
         _port = port,
         _shared = shared;
@@ -94,15 +94,11 @@ class AppEngineHttpServer {
 
   void _stop(HttpRequest request, _) {
     request.drain().then((_) {
-      if (_httpServer != null) {
-        _httpServer.close().then((_) {
-          _httpServer = null;
-          _sendResponse(request.response, HttpStatus.ok, "ok");
+      _httpServer.close().then((_) {
+        _httpServer = null;
+        _sendResponse(request.response, HttpStatus.ok, "ok");
+      });
         });
-      } else {
-        _sendResponse(request.response, HttpStatus.conflict, "fail");
-      }
-    });
   }
 
   _checkShutdown() {

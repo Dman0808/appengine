@@ -52,7 +52,7 @@ Future withAppEngineServices(Future callback()) =>
 /// AppEngine services available within that scope.
 Future runAppEngine(void handler(HttpRequest request, ClientContext context),
     void onError(Object e, StackTrace s),
-    {int port: 8080, bool shared: false}) {
+    {int port = 8080, bool shared = false}) {
   return _withAppEngineServicesInternal((ContextRegistry contextRegistry) {
     var appengineServer =
         new AppEngineHttpServer(contextRegistry, port: port, shared: shared);
@@ -63,22 +63,15 @@ Future runAppEngine(void handler(HttpRequest request, ClientContext context),
         return request.response.done;
       }, onError: (error, stack) {
         var context = contextRegistry.lookup(request);
-        if (context != null) {
-          try {
-            context.services.logging
-                .error('Uncaught error in request handler: $error\n$stack');
-          } catch (e) {
-            print('Error while logging uncaught error: $e.'
-                'Original error: $error\n$stack');
-          }
-        } else {
-          print('Unable to log error, since response has already been sent'
+        try {
+          context.services.logging
+              .error('Uncaught error in request handler: $error\n$stack');
+        } catch (e) {
+          print('Error while logging uncaught error: $e.'
               'Original error: $error\n$stack');
         }
-        if (onError != null) {
-          onError('Uncaught error in request handler zone: $error', stack);
-        }
-
+              onError('Uncaught error in request handler zone: $error', stack);
+      
         // In many cases errors happen during request processing or response
         // preparation. In such cases we want to close the connection, since
         // user code might not be able to.
@@ -88,12 +81,8 @@ Future runAppEngine(void handler(HttpRequest request, ClientContext context),
         request.response.close().catchError((closeError, closeErrorStack) {
           final message = 'Forcefully closing response, due to error in request'
               ' handler zone, resulted in an error: $closeError';
-          if (onError != null) {
-            onError(message, closeErrorStack);
-          } else {
-            print('$message\n$closeErrorStack');
-          }
-        });
+          onError(message, closeErrorStack);
+                });
       });
     });
     return appengineServer.done;
@@ -136,7 +125,7 @@ Future<ContextRegistry> _initializeAppEngine() async {
   final bool isProdEnvironment = !isDevEnvironment;
 
   String _findEnvironmentVariable(String name,
-      {bool onlyInProd: false, bool onlyInDev: false, bool needed: true}) {
+      {bool onlyInProd = false, bool onlyInDev = false, bool needed = true}) {
     if (onlyInProd && !isProdEnvironment) return null;
     if (onlyInDev && !isDevEnvironment) return null;
 
@@ -222,7 +211,7 @@ Future<db.DatastoreDB> _obtainDatastoreService(
     auth.ServiceAccountCredentials serviceAccount) async {
   String endpoint = 'https://datastore.googleapis.com';
   bool needAuthorization = true;
-  if (dbEmulatorHost != null && dbEmulatorHost.contains(':')) {
+  if (dbEmulatorHost.contains(':')) {
     // The datastore emulator uses unencrypted http/2, we use therefore 'http'
     // for the uri scheme.
     endpoint = 'http://$dbEmulatorHost';
@@ -391,7 +380,7 @@ Future<grpc.Client> _getGrpcClient(
 
 auth.ServiceAccountCredentials _obtainServiceAccountCredentials(
     String gcloudKey) {
-  if (gcloudKey != null && gcloudKey != '') {
+  if (gcloudKey != '') {
     try {
       final serviceAccountJson = new File(gcloudKey).readAsStringSync();
       return new auth.ServiceAccountCredentials.fromJson(serviceAccountJson);

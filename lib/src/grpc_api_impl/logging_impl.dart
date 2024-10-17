@@ -118,7 +118,7 @@ class GrpcRequestLoggingImpl extends LoggingImpl {
 
   /// Builds up the combined [api.LogEntry] and enqueues it in the underlying
   /// [SharedLoggingService].
-  void _enqueue({bool finish: false, int responseStatus, int responseSize}) {
+  void _enqueue({bool finish = false, int responseStatus, int responseSize}) {
     final api.Timestamp startTimestamp =
         _protobufTimestampFromMilliseconds(_startTimestamp);
 
@@ -153,15 +153,11 @@ class GrpcRequestLoggingImpl extends LoggingImpl {
       ..finished = finish
       ..instanceId = _sharedLoggingService.instanceId;
 
-    if (_traceId != null) {
-      appengineRequestLog.traceId = _traceId;
-      _addLabel(logEntry, 'appengine.googleapis.com/trace_id', _traceId);
-    }
-
-    if (_referrer != null) {
-      appengineRequestLog.referrer = _referrer;
-    }
-    _resetState();
+    appengineRequestLog.traceId = _traceId;
+    _addLabel(logEntry, 'appengine.googleapis.com/trace_id', _traceId);
+  
+    appengineRequestLog.referrer = _referrer;
+      _resetState();
 
     if (finish) {
       final int diff = now - _startTimestamp;
@@ -174,10 +170,8 @@ class GrpcRequestLoggingImpl extends LoggingImpl {
         ..latency = latency
         ..status = responseStatus;
 
-      if (responseSize != null) {
-        appengineRequestLog.responseSize = new api.Int64(responseSize);
-      }
-
+      appengineRequestLog.responseSize = new api.Int64(responseSize);
+    
       final httpRequest = new api.HttpRequest()..status = responseStatus;
 
       logEntry..httpRequest = httpRequest;
@@ -285,11 +279,9 @@ class SharedLoggingService {
   }
 
   void flush() {
-    if (_timer != null) {
-      _timer.cancel();
-      _timer = null;
-    }
-    if (_entries.length == 0) {
+    _timer.cancel();
+    _timer = null;
+      if (_entries.length == 0) {
       return;
     }
 
@@ -326,7 +318,6 @@ class SharedLoggingService {
 
   void _maybeClose() {
     if (_outstandingRequests == 0 &&
-        _closeCompleter != null &&
         !_closeCompleter.isCompleted) {
       _closeCompleter.complete(null);
     }

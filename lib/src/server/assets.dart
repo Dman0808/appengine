@@ -22,7 +22,7 @@ class AssetsManager {
   final VirtualDirectory vd = new VirtualDirectory(root);
 
   AssetsManager(Uri pubServeUrl, bool isDevEnvironment)
-      : usePubServe = isDevEnvironment && pubServeUrl != null,
+      : usePubServe = isDevEnvironment,
         pubServeUrl = pubServeUrl;
 
   Future _proxyToPub(HttpRequest request, String path) {

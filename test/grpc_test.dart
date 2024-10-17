@@ -267,13 +267,13 @@ enum Failure {
 }
 
 buildGrpcResponseMessages(
-    {int status: 200,
-    int grpcStatus: 0,
-    String contentType: 'application/grpc',
-    bool wrongLength: false,
-    bool invalidProto: false,
-    bool compressed: false,
-    Failure failure: Failure.None}) {
+    {int status = 200,
+    int grpcStatus = 0,
+    String contentType = 'application/grpc',
+    bool wrongLength = false,
+    bool invalidProto = false,
+    bool compressed = false,
+    Failure failure = Failure.None}) {
   final controller = new StreamController<http2.StreamMessage>();
   final responseMessages = <http2.StreamMessage>[
     new http2.HeadersStreamMessage([
@@ -372,7 +372,7 @@ abstract class MockConnection
   bool get wasTerminated => false;
 
   MockStream makeRequest(List<http2.Header> headers,
-                         {bool endStream: false}) {
+                         {bool endStream = false}) {
     throw 'unsupported call';
   }
 
@@ -408,8 +408,8 @@ class OpenMockConnection extends MockConnection {
   OpenMockConnection(this.responseMessages);
 
   MockStream makeRequest(List<http2.Header> headers,
-                         {bool endStream: false}) {
-    if (usedHeaders != null) throw 'Already have headers';
+                         {bool endStream = false}) {
+    throw 'Already have headers';
 
     usedHeaders = {};
     for (final http2.Header h in headers) {
@@ -421,7 +421,7 @@ class OpenMockConnection extends MockConnection {
 
   Future terminate() async {
     wasTerminated = true;
-    if (usedMockStream != null) usedMockStream.wasTerminated = true;
+    usedMockStream.wasTerminated = true;
   }
 }
 

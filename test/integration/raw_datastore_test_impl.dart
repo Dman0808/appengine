@@ -49,19 +49,19 @@ Future<List<Entity>> consumePages(FirstPageProvider provider) {
 runTests(Datastore datastore, String namespace) {
   Partition partition = new Partition(namespace);
 
-  Future<T> withTransaction<T>(Function f, {bool xg: false}) {
+  Future<T> withTransaction<T>(Function f, {bool xg = false}) {
     return datastore.beginTransaction(crossEntityGroup: xg).then(f);
   }
 
   Future<List<Key>> insert(List<Entity> entities,
                            List<Entity> autoIdEntities,
-                           {bool transactional: true}) {
+                           {bool transactional = true}) {
     if (transactional) {
       return withTransaction((Transaction transaction) {
         return datastore.commit(inserts: entities,
                                 autoIdInserts: autoIdEntities,
                                 transaction: transaction).then((result) {
-          if (autoIdEntities != null && autoIdEntities.length > 0) {
+          if (autoIdEntities.length > 0) {
             expect(result.autoIdInsertKeys.length,
                    equals(autoIdEntities.length));
           }
@@ -71,7 +71,7 @@ runTests(Datastore datastore, String namespace) {
     } else {
       return datastore.commit(inserts: entities, autoIdInserts: autoIdEntities)
           .then((result) {
-            if (autoIdEntities != null && autoIdEntities.length > 0) {
+            if (autoIdEntities.length > 0) {
               expect(result.autoIdInsertKeys.length,
                      equals(autoIdEntities.length));
             }
@@ -80,7 +80,7 @@ runTests(Datastore datastore, String namespace) {
     }
   }
 
-  Future delete(List<Key> keys, {bool transactional: true}) {
+  Future delete(List<Key> keys, {bool transactional = true}) {
     if (transactional) {
       return withTransaction((Transaction t) {
         return datastore.commit(deletes: keys, transaction: t)
@@ -91,7 +91,7 @@ runTests(Datastore datastore, String namespace) {
     }
   }
 
-  Future<List<Entity>> lookup(List<Key> keys, {bool transactional: true}) {
+  Future<List<Entity>> lookup(List<Key> keys, {bool transactional = true}) {
     if (transactional) {
       return withTransaction((Transaction transaction) {
         return datastore.lookup(keys, transaction: transaction);
@@ -101,7 +101,7 @@ runTests(Datastore datastore, String namespace) {
     }
   }
 
-  bool isValidKey(Key key, {bool ignoreIds: false}) {
+  bool isValidKey(Key key, {bool ignoreIds = false}) {
     if (key.elements.length == 0) return false;
 
     for (var element in key.elements) {
@@ -116,7 +116,7 @@ runTests(Datastore datastore, String namespace) {
     return true;
   }
 
-  bool compareKey(Key a, Key b, {bool ignoreIds: false}) {
+  bool compareKey(Key a, Key b, {bool ignoreIds = false}) {
     if (a.partition != b.partition) return false;
     if (a.elements.length != b.elements.length) return false;
     for (int i = 0; i < a.elements.length; i++) {
@@ -126,7 +126,7 @@ runTests(Datastore datastore, String namespace) {
     return true;
   }
 
-  bool compareEntity(Entity a, Entity b, {bool ignoreIds: false}) {
+  bool compareEntity(Entity a, Entity b, {bool ignoreIds = false}) {
     if (!compareKey(a.key, b.key, ignoreIds: ignoreIds)) return false;
     if (a.properties.length != b.properties.length) return false;
     for (var key in a.properties.keys) {
@@ -161,7 +161,7 @@ runTests(Datastore datastore, String namespace) {
   group('e2e_datastore', () {
     group('insert', () {
       Future<List<Key>> testInsert(List<Entity> entities,
-          {bool transactional: false, bool xg: false, bool unnamed: true}) {
+          {bool transactional = false, bool xg = false, bool unnamed = true}) {
         Future<List<Key>> test(Transaction transaction) {
           return datastore.commit(autoIdInserts: entities,
                                   transaction: transaction)
@@ -189,7 +189,7 @@ runTests(Datastore datastore, String namespace) {
       }
 
       Future<List<Key>> testInsertNegative(List<Entity> entities,
-          {bool transactional: false, bool xg: false}) {
+          {bool transactional = false, bool xg = false}) {
         test(Transaction transaction) {
           expect(datastore.commit(autoIdInserts: entities,
                                   transaction: transaction),
@@ -295,10 +295,10 @@ runTests(Datastore datastore, String namespace) {
     group('lookup', () {
       Future testLookup(List<Key> keysToLookup,
                         List<Entity> entitiesToLookup,
-                        {bool transactional: false,
-                         bool xg: false,
-                         bool negative: false,
-                         bool named: false}) {
+                        {bool transactional = false,
+                         bool xg = false,
+                         bool negative = false,
+                         bool named = false}) {
         expect(keysToLookup.length, equals(entitiesToLookup.length));
         for (var i = 0; i < keysToLookup.length; i++) {
           expect(compareKey(keysToLookup[i],
@@ -383,7 +383,7 @@ runTests(Datastore datastore, String namespace) {
 
     group('delete', () {
       Future testDelete(List<Key> keys,
-                       {bool transactional: false, bool xg: false}) {
+                       {bool transactional = false, bool xg = false}) {
         Future test(Transaction transaction) {
           return datastore.commit(deletes: keys).then((_) {
             if (transaction != null) {
@@ -450,7 +450,7 @@ runTests(Datastore datastore, String namespace) {
     });
 
     group('rollback', () {
-      Future testRollback(List<Key> keys, {bool xg: false}) {
+      Future testRollback(List<Key> keys, {bool xg = false}) {
         return withTransaction((Transaction transaction) {
           return datastore.lookup(keys, transaction: transaction)
               .then((List<Entity> entities) {
@@ -478,7 +478,7 @@ runTests(Datastore datastore, String namespace) {
 
     group('empty_commit', () {
       Future testEmptyCommit(
-          List<Key> keys, {bool transactional: false, bool xg: false}) {
+          List<Key> keys, {bool transactional = false, bool xg = false}) {
         Future test(Transaction transaction) {
           return datastore.lookup(keys, transaction: transaction)
               .then((List<Entity> entities) {
@@ -525,7 +525,7 @@ runTests(Datastore datastore, String namespace) {
 
     group('conflicting_transaction', () {
       Future testConflictingTransaction(
-          List<Entity> entities, {bool xg: false}) {
+          List<Entity> entities, {bool xg = false}) {
         Future test(
             List<Entity> entities, Transaction transaction, value) {
 
@@ -595,8 +595,8 @@ runTests(Datastore datastore, String namespace) {
       Future<List<Entity>> testQuery(String kind,
                        {List<Filter> filters,
                         List<Order> orders,
-                        bool transactional: false,
-                        bool xg: false,
+                        bool transactional = false,
+                        bool xg = false,
                         int offset,
                         int limit}) {
         Future<List<Entity>> test(Transaction transaction) {
@@ -624,9 +624,9 @@ runTests(Datastore datastore, String namespace) {
                                  List<Entity> expectedEntities,
                                  {List<Filter> filters,
                                   List<Order> orders,
-                                  bool transactional: false,
-                                  bool xg: false,
-                                  bool correctOrder: true,
+                                  bool transactional = false,
+                                  bool xg = false,
+                                  bool correctOrder = true,
                                   int offset,
                                   int limit}) {
         return testQuery(kind,
@@ -658,8 +658,8 @@ runTests(Datastore datastore, String namespace) {
       Future testOffsetLimitQuery(String kind,
                                   List<Entity> expectedEntities,
                                   {List<Order> orders,
-                                   bool transactional: false,
-                                   bool xg: false}) {
+                                   bool transactional = false,
+                                   bool xg = false}) {
         // We query for all subsets of expectedEntities
         // NOTE: This is O(0.5 * n^2) queries, but n is currently only 6.
         List<Function> queryTests = [];

@@ -46,7 +46,7 @@ class GrpcDatastoreImpl implements raw.Datastore {
   }
 
   Future<raw.Transaction> beginTransaction(
-      {bool crossEntityGroup: false}) async {
+      {bool crossEntityGroup = false}) async {
     final request = new BeginTransactionRequest()..projectId = _projectId;
 
     try {
@@ -71,30 +71,24 @@ class GrpcDatastoreImpl implements raw.Datastore {
       request.mode = CommitRequest_Mode.NON_TRANSACTIONAL;
     }
 
-    if (autoIdInserts != null) {
-      for (final raw.Entity insert in autoIdInserts) {
-        request.mutations.add(new Mutation()
-          ..insert = _codec.encodeEntity(insert, enforceId: false));
-      }
+    for (final raw.Entity insert in autoIdInserts) {
+      request.mutations.add(new Mutation()
+        ..insert = _codec.encodeEntity(insert, enforceId: false));
     }
-    if (inserts != null) {
       for (final raw.Entity insert in inserts) {
-        request.mutations
-            .add(new Mutation()..upsert = _codec.encodeEntity(insert));
-      }
+      request.mutations
+          .add(new Mutation()..upsert = _codec.encodeEntity(insert));
     }
-    if (deletes != null) {
       for (final raw.Key delete in deletes) {
-        request.mutations
-            .add(new Mutation()..delete = _codec.encodeKey(delete));
-      }
+      request.mutations
+          .add(new Mutation()..delete = _codec.encodeKey(delete));
     }
-    try {
+      try {
       final CommitResponse response =
           await _clientRPCStub.commit(null, request);
 
       var allocatedKeys;
-      if (autoIdInserts?.isNotEmpty ?? false) {
+      if (autoIdInserts.isNotEmpty ?? false) {
         allocatedKeys = new List<raw.Key>.generate(autoIdInserts.length, (i) {
           return _codec.decodeKey(response.mutationResults[i].key);
         });
@@ -140,25 +134,21 @@ class GrpcDatastoreImpl implements raw.Datastore {
     try {
       final LookupResponse response =
           await _clientRPCStub.lookup(null, request);
-      if (response.deferred != null && response.deferred.length > 0) {
+      if (response.deferred.length > 0) {
         throw new raw.DatastoreError(
             'Could not successfully look up all keys due to resource '
             'constraints.');
       }
 
       final Map<Key, raw.Entity> entityLookupResult = <Key, raw.Entity>{};
-      if (response.found != null) {
-        for (final result in response.found) {
-          entityLookupResult[result.entity.key] =
-              _codec.decodeEntity(result.entity);
-        }
+      for (final result in response.found) {
+        entityLookupResult[result.entity.key] =
+            _codec.decodeEntity(result.entity);
       }
-      if (response.missing != null) {
-        for (final result in response.missing) {
-          entityLookupResult[result.entity.key] = null;
-        }
+          for (final result in response.missing) {
+        entityLookupResult[result.entity.key] = null;
       }
-      final entities = new List<raw.Entity>(request.keys.length);
+          final entities = new List<raw.Entity>(request.keys.length);
       for (int i = 0; i < request.keys.length; i++) {
         final key = request.keys[i];
         // The key needs to be in the map, but it's value might be `null`.
@@ -299,8 +289,7 @@ class _QueryPageImpl implements Page<raw.Entity> {
       int remainingNumberOfEntities,
       QueryResultBatch batch) {
     // If we have an offset: Check that in total we haven't skipped too many.
-    if (offset != null &&
-        offset > 0 &&
+    if (offset > 0 &&
         batch.hasSkippedResults() &&
         batch.skippedResults > (offset - alreadySkipped)) {
       throw new raw.DatastoreError(
@@ -311,8 +300,7 @@ class _QueryPageImpl implements Page<raw.Entity> {
     }
 
     // If we have a limit: Check that in total we haven't gotten too many.
-    if (remainingNumberOfEntities != null &&
-        remainingNumberOfEntities > 0 &&
+    if (remainingNumberOfEntities > 0 &&
         batch.entityResults.length > remainingNumberOfEntities) {
       throw new raw.DatastoreError(
           'Datastore returned more entitites (${batch.entityResults.length}) '
@@ -321,7 +309,7 @@ class _QueryPageImpl implements Page<raw.Entity> {
 
     // If we have a limit: Calculate the remaining limit.
     int remainingEntities;
-    if (remainingNumberOfEntities != null && remainingNumberOfEntities > 0) {
+    if (remainingNumberOfEntities > 0) {
       remainingEntities =
           remainingNumberOfEntities - batch.entityResults.length;
     }
@@ -350,7 +338,7 @@ class _QueryPageImpl implements Page<raw.Entity> {
 
     // If we have an offset: Calculate the new number of skipped entities.
     int skipped = alreadySkipped;
-    if (offset != null && offset > 0 && batch.hasSkippedResults()) {
+    if (offset > 0 && batch.hasSkippedResults()) {
       skipped += batch.skippedResults;
     }
 
@@ -375,20 +363,16 @@ class _QueryPageImpl implements Page<raw.Entity> {
     _request.query.startCursor = _cursor;
 
     // We modify the adjusted offset/limits.
-    if (_offset != null && (_offset - _alreadySkipped) > 0) {
+    if ((_offset - _alreadySkipped) > 0) {
       _request.query.offset = _offset - _alreadySkipped;
     } else {
       _request.query.clearOffset();
     }
-    if (_remainingNumberOfEntities != null) {
-      _request.query.limit = new Int32Value()
-        ..value = _remainingNumberOfEntities;
-    } else {
-      _request.query.clearLimit();
-    }
-
+    _request.query.limit = new Int32Value()
+      ..value = _remainingNumberOfEntities;
+  
     // Maybe lower the number of entities we want to get back in one go.
-    if (pageSize != null && pageSize > 0) {
+    if (pageSize > 0) {
       if (!_request.query.hasLimit()) {
         _request.query.limit = new Int32Value()..value = pageSize;
       } else if (_request.query.limit.value >= pageSize) {
@@ -521,14 +505,13 @@ class _Codec {
     return new raw.Key(keyElements, partition: partition);
   }
 
-  Entity encodeEntity(raw.Entity entity, {bool enforceId: true}) {
+  Entity encodeEntity(raw.Entity entity, {bool enforceId = true}) {
     final pb = new Entity();
     pb.key = encodeKey(entity.key, enforceId: enforceId);
 
     final Set<String> unIndexedProperties = entity.unIndexedProperties;
     entity.properties.forEach((String property, Object value) {
-      bool indexProperty = (unIndexedProperties == null ||
-          !unIndexedProperties.contains(property));
+      bool indexProperty = (!unIndexedProperties.contains(property));
 
       final pbProperty = new Entity_PropertiesEntry();
       pbProperty.key = property;
@@ -538,7 +521,7 @@ class _Codec {
     return pb;
   }
 
-  Key encodeKey(raw.Key key, {bool enforceId: true}) {
+  Key encodeKey(raw.Key key, {bool enforceId = true}) {
     final pbPartitionId = new PartitionId()..projectId = _projectId;
     final pb = new Key()..partitionId = pbPartitionId;
 

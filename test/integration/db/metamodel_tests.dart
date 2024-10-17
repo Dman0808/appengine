@@ -19,7 +19,7 @@ List<Entity> buildEntitiesWithDifferentNamespaces(String uniquePostfix) {
     return new Key([new KeyElement(kind, id)], partition: partition);
   }
 
-  newEntity(String namespace, String kind, {int id: 1}) {
+  newEntity(String namespace, String kind, {int id = 1}) {
     return new Entity(newKey(namespace, kind, id), {'ping': 'pong'});
   }
 

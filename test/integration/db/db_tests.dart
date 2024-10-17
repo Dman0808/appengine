@@ -76,12 +76,7 @@ class Person extends db.Model {
 }
 
 bool areStringListsEqual(List<String> a, List<String> b) {
-  if (a == null) {
-    if (b == null) return true;
-    return false;
-  }
-
-  if (a.length != b?.length)  return false;
+  if (a.length != b.length)  return false;
 
   for (int i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;
@@ -107,8 +102,8 @@ class User extends Person {
       return false;
 
     User user = other;
-    return areStringListsEqual(languages, user?.languages) &&
-           areStringListsEqual(hobbies, user?.hobbies);
+    return areStringListsEqual(languages, user.languages) &&
+           areStringListsEqual(hobbies, user.hobbies);
   }
 
   String toString() =>
@@ -151,7 +146,7 @@ runTests(db.DatastoreDB store, String namespace) {
 
   void compareModels(List<db.Model> expectedModels,
                      List<db.Model> models,
-                     {bool anyOrder: false}) {
+                     {bool anyOrder = false}) {
     expect(models.length, equals(expectedModels.length));
     if (anyOrder) {
       // Do expensive O(n^2) search.
@@ -173,7 +168,7 @@ runTests(db.DatastoreDB store, String namespace) {
   }
 
   Future testInsertLookupDelete(
-      List<db.Model> objects, {bool transactional: false}) {
+      List<db.Model> objects, {bool transactional = false}) {
     var keys = objects.map((db.Model obj) => obj.key).toList();
 
     if (transactional) {

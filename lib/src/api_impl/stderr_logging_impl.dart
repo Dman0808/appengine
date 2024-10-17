@@ -43,7 +43,7 @@ class StderrRequestLoggingImpl extends LoggingImpl {
         responseSize: responseSize);
   }
 
-  void _enqueue({bool finish: false, int responseStatus, int responseSize}) {
+  void _enqueue({bool finish = false, int responseStatus, int responseSize}) {
     final now = new DateTime.now().toUtc();
     final buffer = new StringBuffer();
 
@@ -88,12 +88,8 @@ class _LogLine {
 
   String format(DateTime start) {
     String time;
-    if (start != null) {
-      final ms = timestamp.difference(start).inMilliseconds.toString();
-      time = '${' ' * (5 - ms.length)}$ms ms';
-    } else {
-      time = '$timestamp';
-    }
-    return '$time ${level.name}: $message';
+    final ms = timestamp.difference(start).inMilliseconds.toString();
+    time = '${' ' * (5 - ms.length)}$ms ms';
+      return '$time ${level.name}: $message';
   }
 }

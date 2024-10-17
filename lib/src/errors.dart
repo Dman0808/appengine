@@ -31,7 +31,7 @@ class ProtocolError extends AppEngineError implements IOException {
 class ServiceError extends AppEngineError {
   final String serviceName;
 
-  ServiceError(String message, {this.serviceName: 'ServiceError'})
+  ServiceError(String message, {this.serviceName = 'ServiceError'})
       : super(message);
 
   String toString() => "$serviceName: $message";

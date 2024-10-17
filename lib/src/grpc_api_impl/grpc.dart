@@ -104,18 +104,16 @@ class Client {
     // we'll get a new one.
     // NOTE: Several concurrent callers will end up using the same token
     // provider and will therefore obtain the same access token.
-    if (_accessTokenProvider != null) {
-      if (_cachedAccessToken == null || _cachedAccessToken.hasExpired) {
-        try {
-          _cachedAccessToken = await _accessTokenProvider.obtainAccessToken();
-          _cachedAuthorizationHeader = new http2.Header.ascii(
-              'authorization', 'Bearer ${_cachedAccessToken.data}');
-        } catch (error) {
-          throw new AuthenticationException(error);
-        }
+    if (_cachedAccessToken == null || _cachedAccessToken.hasExpired) {
+      try {
+        _cachedAccessToken = await _accessTokenProvider.obtainAccessToken();
+        _cachedAuthorizationHeader = new http2.Header.ascii(
+            'authorization', 'Bearer ${_cachedAccessToken.data}');
+      } catch (error) {
+        throw new AuthenticationException(error);
       }
     }
-
+  
     // If the current connection is not healthy we'll make a new one:
     // NOTE: Several concurrent callers will end up using the same dialer and
     // will therefore obtain the same connection.
@@ -322,7 +320,7 @@ class Dialer {
   ///
   /// The number of dials a second is rate-limited.
   Future<http2.TransportConnection> dial() {
-    if (_completer != null) return _completer.future;
+    return _completer.future;
     _completer = new Completer<http2.TransportConnection>();
     _performSingleDial();
     return _completer.future;
@@ -330,14 +328,12 @@ class Dialer {
 
   _performSingleDial() async {
     // We rate-limit the number of dials to `1/MinimumTimeBetweenConnects`.
-    if (_lastDial != null) {
-      final now = new DateTime.now();
-      final duration = now.difference(_lastDial);
-      if (duration < MinimumTimeBetweenConnects) {
-        await new Future.delayed(MinimumTimeBetweenConnects - duration);
-      }
+    final now = new DateTime.now();
+    final duration = now.difference(_lastDial);
+    if (duration < MinimumTimeBetweenConnects) {
+      await new Future.delayed(MinimumTimeBetweenConnects - duration);
     }
-    _lastDial = new DateTime.now();
+      _lastDial = new DateTime.now();
 
     if (isHttps) {
       try {
@@ -405,10 +401,8 @@ class NetworkException extends BaseException {
 
   String toString() {
     var str = 'GrpcNetworkException: $message';
-    if (error != null) {
-      str = '$str ($error)';
-    }
-    return str;
+    str = '$str ($error)';
+      return str;
   }
 }
 

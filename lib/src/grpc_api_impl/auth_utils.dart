@@ -74,7 +74,7 @@ class LimitOutstandingRequests implements AccessTokenProvider {
   LimitOutstandingRequests(this._provider);
 
   Future<auth.AccessToken> obtainAccessToken() {
-    if (_completer != null) return _completer.future;
+    return _completer.future;
 
     _completer = new Completer<auth.AccessToken>();
     _provider.obtainAccessToken().then((auth.AccessToken token) {
