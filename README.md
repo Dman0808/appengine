@@ -195,8 +195,7 @@ $ gcloud beta emulators datastore start
 To make the application use the emulator, the `DATASTORE_EMULATOR_HOST`
 environment variable needs to be set (in addition to the other variables):
 
-```console
-$ export DATASTORE_EMULATOR_HOST=localhost:8268
+DATASTORE_EMULATOR_HOST=localhost:8268
 $ export GCLOUD_KEY=<path-to-service-account-key.json>
 $ export GCLOUD_PROJECT=<project-name>
 $ dart bin/server.dart
